@@ -47,10 +47,8 @@ class AdamOptimizer(BaseOptimizer):
         self.eps = eps
         self.m = [torch.zeros_like(p.data) for p in self.params]
         self.v = [torch.zeros_like(p.data) for p in self.params]
-        #t = 0
 
     def step(self):
-        #t += 1
         for t, p in enumerate(self.params):
             if p.grad is not None:
                 self.m[t] = self.beta1 * self.m[t] + (1 - self.beta1) * p.grad
