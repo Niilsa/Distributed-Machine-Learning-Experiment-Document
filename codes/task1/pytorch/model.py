@@ -3,7 +3,7 @@ import torch
 import torch.nn as nn
 import torch.nn.functional as F 
 import torchvision
-from MyOptimizer import GdOptimizer, AdamOptimizer
+from MyOptimizer import GDOptimizer, SGDOptimizer, AdamOptimizer
 
 class Net(nn.Module):
     def __init__(self, in_channels=1, num_classes=10):
@@ -38,7 +38,7 @@ def train(model, dataloader, optimizer, loss_fn, num_epochs=1):
         for i, batch_data in enumerate(dataloader):
             # with dist_autograd.context() as context_id:
             inputs, labels = batch_data
-            inputs, labels = inputs.cuda(), labels.cuda()
+            #inputs, labels = inputs.cuda(), labels.cuda()
 
             outputs = model(inputs)
             loss = loss_fn(outputs, labels)
@@ -63,7 +63,7 @@ def test(model: nn.Module, test_loader):
     print("testing ...")
     with torch.no_grad():
         for inputs, labels in test_loader:
-            inputs, labels = inputs.cuda(), labels.cuda()
+            #inputs, labels = inputs.cuda(), labels.cuda()
             output = model(inputs)
             pred = output.data.max(1, keepdim=True)[1]
             correct += pred.eq(labels.data.view_as(pred)).sum().item()
@@ -73,7 +73,7 @@ def test(model: nn.Module, test_loader):
 
 def main():
     model = Net(in_channels=1, num_classes=10)
-    model.cuda()
+    #model.cuda()
 
     DATA_PATH = "./data"
 
@@ -87,9 +87,11 @@ def main():
     train_loader = torch.utils.data.DataLoader(train_set, batch_size=1, shuffle=True)
     test_loader = torch.utils.data.DataLoader(test_set, batch_size=32, shuffle=False)
 
-    loss_fn = nn.CrossEntropyLoss()
-    optimizer = GdOptimizer(model.parameters(), lr=0.01)
-    # optimizer = AdamOptimizer(model.parameters(), lr=0.01, b1=0.9, b2=0.999)
+    loss_fn = nn.CrossEntropyLoss()  #optimizer = torch.optim.SGD(model.parameters(), lr=0.01)
+
+    #optimizer = GSOptimizer(model.parameters(), lr=0.01)
+    #optimizer = SGDOptimizer(model.parameters(), lr=0.01)
+    optimizer = AdamOptimizer(model.parameters(), lr=0.01, b1=0.9, b2=0.999)
 
     train(model, train_loader, optimizer, loss_fn)
     test(model, test_loader)
