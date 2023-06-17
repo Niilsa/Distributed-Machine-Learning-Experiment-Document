@@ -40,21 +40,21 @@ class SGDOptimizer(BaseOptimizer):
                             
 
 class AdamOptimizer(BaseOptimizer):
-    def __init__(self, params, lr=0.001, b1=0.9, b2=0.999, eps=1e-8):
+    def __init__(self, params, lr=0.001, beta1=0.9, beta2=0.999, eps=1e-8):
         super().__init__(params, lr)
-        self.beta1 = b1
-        self.beta2 = b2
+        self.beta1 = beta1
+        self.beta2 = beta2
         self.eps = eps
         self.m = [torch.zeros_like(p.data) for p in self.params]
         self.v = [torch.zeros_like(p.data) for p in self.params]
-        self.t = 0
+        #t = 0
 
     def step(self):
-        self.t += 1
-        for i, p in enumerate(self.params):
+        #t += 1
+        for t, p in enumerate(self.params):
             if p.grad is not None:
-                self.m[i] = self.beta1 * self.m[i] + (1 - self.beta1) * p.grad
-                self.v[i] = self.beta2 * self.v[i] + (1 - self.beta2) * p.grad**2
-                m_hat = self.m[i] / (1 - self.beta1**self.t)
-                v_hat = self.v[i] / (1 - self.beta2**self.t)
+                self.m[t] = self.beta1 * self.m[t] + (1 - self.beta1) * p.grad
+                self.v[t] = self.beta2 * self.v[t] + (1 - self.beta2) * p.grad**2
+                m_hat = self.m[t] / (1 - self.beta1**(t + 1))
+                v_hat = self.v[t] / (1 - self.beta2**(t + 1))
                 p.data -= self.lr * m_hat / (torch.sqrt(v_hat) + self.eps)

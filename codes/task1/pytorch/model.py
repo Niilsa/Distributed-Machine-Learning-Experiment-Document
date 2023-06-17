@@ -91,7 +91,7 @@ def main():
 
     #optimizer = GSOptimizer(model.parameters(), lr=0.01)
     #optimizer = SGDOptimizer(model.parameters(), lr=0.01)
-    optimizer = AdamOptimizer(model.parameters(), lr=0.01, b1=0.9, b2=0.999)
+    optimizer = AdamOptimizer(model.parameters(), lr=0.01, beta1=0.8, beta2=0.999)
 
     train(model, train_loader, optimizer, loss_fn)
     test(model, test_loader)
