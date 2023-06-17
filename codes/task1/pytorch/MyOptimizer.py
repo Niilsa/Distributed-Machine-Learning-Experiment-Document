@@ -45,17 +45,16 @@ class AdamOptimizer(BaseOptimizer):
         self.beta1 = b1
         self.beta2 = b2
         self.eps = eps
-        self.momentums = [torch.zeros_like(p) for p in self.params]
-        self.velocities = [torch.zeros_like(p) for p in self.params]
+        self.m = [torch.zeros_like(p.data) for p in self.params]
+        self.v = [torch.zeros_like(p.data) for p in self.params]
         self.t = 0
-        
+
     def step(self):
         self.t += 1
         for i, p in enumerate(self.params):
             if p.grad is not None:
-                grad = p.grad
-                self.momentums[i] = self.beta1 * self.momentums[i] + (1 - self.beta1) * grad
-                self.velocities[i] = self.beta2 * self.velocities[i] + (1 - self.beta2) * grad**2
-                momentums_hat = self.momentums[i] / (1 - self.beta1**self.t)
-                velocities_hat = self.velocities[i] / (1 - self.beta2**self.t)
-                p.data -= self.lr * momentums_hat / (torch.sqrt(velocities_hat) + self.eps)
+                self.m[i] = self.beta1 * self.m[i] + (1 - self.beta1) * p.grad
+                self.v[i] = self.beta2 * self.v[i] + (1 - self.beta2) * p.grad**2
+                m_hat = self.m[i] / (1 - self.beta1**self.t)
+                v_hat = self.v[i] / (1 - self.beta2**self.t)
+                p.data -= self.lr * m_hat / (torch.sqrt(v_hat) + self.eps)
