@@ -38,9 +38,21 @@ def init_parameters(model):
 
 
 def allreduce_average_gradients(model):
-    for param in model.parameters():
-        # implement your own aggregation method
-        raise NotImplementedError
+    size = dist.get_world_size()
+    for param in model.parameters(): ## -- HERE
+        # Initialize a tensor to store the summed gradients
+        dist.all_reduce(param.grad.data, op=dist.ReduceOp.SUM)
+        
+        # Average the gradients by dividing the summed gradients by the world size
+        param.grad.data /= size
 
 def allgather_average_gradients(model):
-    raise NotImplementedError
+    size = dist.get_world_size()
+    for param in model.parameters():
+        # Initialize a tensor to store the gathered gradients
+        gathered_gradients = [torch.zeros_like(param.grad.data) for _ in range(size)]
+        dist.all_gather(gathered_gradients, param.grad.data)
+        
+        # Average the gathered gradients
+        averaged_gradients = torch.mean(torch.stack(gathered_gradients), dim=0)
+        param.grad.data = averaged_gradients

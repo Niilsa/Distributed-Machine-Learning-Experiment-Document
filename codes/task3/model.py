@@ -7,7 +7,8 @@ import argparse
 import torch.distributed as dist 
 import torch.multiprocessing as mp
 import dist_utils
-from sampler import MySampler
+from sampler import *
+import time
 
 class Net(nn.Module):
     def __init__(self, in_channels=1, num_classes=10):
@@ -108,7 +109,12 @@ if __name__ == "__main__":
     train_set = torchvision.datasets.MNIST(DATA_PATH, train=True, download=True, transform=transform)
     test_set = torchvision.datasets.MNIST(DATA_PATH, train=False, download=True, transform=transform)
 
-    sampler = MySampler(train_set, args.n_devices, args.rank, shuffle=True, seed=args.rank)
+    SAMPLER_TYPE = 'RandomSampler'
+
+    if SAMPLER_TYPE == 'RandomSampler':
+        sampler = RandomSampler(train_set, args.n_devices, args.rank, shuffle=True, seed=args.rank)
+    elif SAMPLER_TYPE == 'BalancedSampler':
+        sampler = BalancedSampler(train_set, args.n_devices, args.rank, shuffle=True, seed=args.rank)
 
     train_loader = torch.utils.data.DataLoader(train_set, batch_size=32, shuffle=False, sampler=sampler)
     test_loader = torch.utils.data.DataLoader(test_set, batch_size=32, shuffle=False)
@@ -117,5 +123,10 @@ if __name__ == "__main__":
     loss_fn = nn.CrossEntropyLoss()
     optimizer = torch.optim.SGD(model.parameters(), lr=0.001, momentum=0.9)
 
+    start_time = time.time()
     train(model, train_loader, loss_fn, optimizer)
+    total_time = time.time() - start_time
+    print(f'Training time = {total_time} s.')
+
     test(model, test_loader)
+    print(f'Sampler type - {SAMPLER_TYPE}')

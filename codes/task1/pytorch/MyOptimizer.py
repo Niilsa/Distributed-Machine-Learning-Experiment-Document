@@ -1,6 +1,17 @@
 import random
 import torch
 
+def seed_everything(seed=42):
+    # Set the seed for Python's built-in random module
+    random.seed(seed)
+
+    # Set the seed for PyTorch
+    torch.manual_seed(seed)
+    torch.cuda.manual_seed(seed)
+    torch.cuda.manual_seed_all(seed)  # if you use multiple GPUs
+    torch.backends.cudnn.deterministic = True
+    torch.backends.cudnn.benchmark = False
+
 class BaseOptimizer():
     def __init__(self, params, lr=0.001):
         self.params = list(params)

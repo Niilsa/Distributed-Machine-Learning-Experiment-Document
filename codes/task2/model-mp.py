@@ -7,7 +7,7 @@ import argparse
 from torch.utils.data.distributed import DistributedSampler
 import torch.multiprocessing as mp
 import dist_utils
-import matplotlib.pyplot as plt
+#import matplotlib.pyplot as plt
 import time
 
 class Net(nn.Module):
@@ -58,6 +58,7 @@ def train(model, dataloader, loss_fn, optimizer, num_epochs=2):
             loss.backward()
             # averge the gradients of model parameters
             dist_utils.allreduce_average_gradients(model)
+            #dist_utils.allgather_average_gradients(model)
 
             optimizer.step()
             loss_total += loss.item()
